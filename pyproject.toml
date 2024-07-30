@@ -1,0 +1,28 @@
+[tool.poetry]
+name = "crawlerdownload"
+version = "0.1.0"
+description = ""
+authors = ["FGx <140056503+xerdream@users.noreply.github.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.11"
+aiofiles = "^24.1.0"
+aiohttp = "^3.9.5"
+pillow = "^10.4.0"
+pyexecjs = "^1.5.1"
+pytube = "^15.0.0"
+requests = "^2.32.3"
+yt-dlp = "^2024.7.25"
+pyzbar = "^0.1.9"
+pycryptodome = "^3.20.0"
+
+
+[[tool.poetry.source]]
+name = "tsinghua"
+url = "https://pypi.tuna.tsinghua.edu.cn/simple"
+priority = "primary"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
