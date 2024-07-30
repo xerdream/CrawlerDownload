@@ -1,4 +1,5 @@
 {
     "save_path": "download/",
-    "bilibili_cookies": ""
+    "bilibili_cookies": "",
+    "proxy": "socks5://127.0.0.1:11451"
 }

@@ -3,6 +3,8 @@ import requests
 import os
 import re
 from pathlib import Path
+import sys
+sys.path.append("D:\\test\\CrawlerDownload\\src")
 from Util import wget
 from Util import UrlCodeError, URLError
 
@@ -14,7 +16,7 @@ video_name = None
 progressbar = None
 print_log = print
 
-user_agent = "Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/86.0.4240.198 Safari/537.36"
+user_agent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/127.0.0.0 Safari/537.36 Edg/127.0.0.0"
 header1 = {  # 获取下载地址的网页请求头
     'user-agent': user_agent,
     "cookie": cookies
@@ -47,6 +49,9 @@ def check_url():
         raise URLError("bl", url)
     else:
         url = temp_url[0]
+        url = url.split('?')[0]
+        if url[-1] != '/':  # 如果末尾没斜杠会导致获取不到最高画质
+            url += '/'
 
 
 def get_download_url():  # 处理html获得下载地址
@@ -63,11 +68,25 @@ def get_download_url():  # 处理html获得下载地址
     re_script = re.compile(r'<script>window.__playinfo__=(.*?)</script>',
                            re.S)  # 包含各种清晰度下载地址的scrip
     print_log("解析下载地址...")
+
+    try:
+        script = re_script.findall(html_text)[0]
+        json_script = json.loads(script)
+        vq = json_script["data"]["dash"]["video"][0]["height"]
+        if vq < 1080:
+            print_log(f"*****当前获得的最高画质为{vq},可能需要更新cookies下载更高画质*****")
+        global audio_url
+        audio_url = json_script['data']['dash']['audio'][0]['baseUrl']  # 0是最高清晰度
+        global video_url
+        video_url = json_script['data']['dash']['video'][0]['baseUrl']  # 0是最高清晰度
+
+    except Exception as e:
+        print_log(f"[错误] 下载地址获取失败：{e}")
+
     try:
         global video_name
-        if video_name is None:  # 未手动指定标题则获取网页标题
-            video_name = re_name.findall(html_text)[0]
-            print_log("自动获取的视频名称：" + video_name)
+        video_name = re_name.findall(html_text)[0]
+        print_log("自动获取的视频名称：" + video_name)
         video_name = re.sub(r'[\/:|?*"<> ]', '', video_name)
         if len(video_name) > 50:  # 限制为50个字符
             video_name = video_name[:50]
@@ -76,17 +95,6 @@ def get_download_url():  # 处理html获得下载地址
         print_log(f"[错误] 视频名称获取失败：{e}")
         print_log("使用bv号作为文件名称")
         video_name = url.split("/")[4]
-
-    try:
-        script = re_script.findall(html_text)[0]
-        json_script = json.loads(script)
-
-        global audio_url
-        audio_url = json_script['data']['dash']['audio'][0]['baseUrl']  # 0是最高清晰度
-        global video_url
-        video_url = json_script['data']['dash']['video'][0]['baseUrl']  # 0是最高清晰度
-    except Exception as e:
-        print_log(f"[错误] 下载地址获取失败：{e}")
 
 
 def download_audio():
@@ -156,23 +164,33 @@ def main_invoked_by_ui(save_audio: bool, save_mp4: bool, save_video: bool):
 # https://www.bilibili.com/video/BV1Bk4y1x7gA/?spm_id_from=333.999.0.0&vd_source=6382367da098de8f5bf4115c8898df40
 if __name__ == "__main__":
     print_log("正在获取下载地址")
-    url = "https://www.bilibili.com/video/BV1sJ4m1M7AT/?spm_id_from=333.1007.tianma.1-2-2.click&vd_source=6382367da098de8f5bf4115c8898df40"
-    recv = requests.get(url, headers=header1)
-    code = recv.status_code
-    if (code != 200):
-        recv.close()
-        print_log("无法访问网站")
-        raise UrlCodeError(code)
-    html_text = recv.text
-    recv.close()
-    re_name = re.compile(r'class="video-title".*?>(.*?)</h1>', re.S)  # 视频标题
-    re_script = re.compile(r'<script>window.__playinfo__=(.*?)</script>',
-                           re.S)  # 包含各种清晰度下载地址的scrip
-    script = re_script.findall(html_text)[0]
-    json_script = json.loads(script)
-    audio_url = json_script['data']['dash']['audio'][0]['baseUrl']  # 0是最高清晰度
-    audio_url2 = json_script['data']['dash']['audio'][2]['baseUrl']  # 0是最高清晰度
-    video_url = json_script['data']['dash']['video'][0]['baseUrl']  # 0是最高清晰度
+    user_agent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/127.0.0.0 Safari/537.36 Edg/127.0.0.0"
+    url1 = "https://www.bilibili.com/video/BV1jE421N7rv?spm_id_from=333.880.my_history.page.click&vd_source=6382367da098de8f5bf4115c8898df40"
+
+    """检查并纠正url"""
+    temp_url = re.search(r"(https|http|ftp)://([\w-]+\.)+[\w-]+(/[./?%&=\w-]*)(:[0-9]{1,5})?(/[S]*)?", url1)
+
+    if temp_url is None:
+        raise URLError("bl", url)
+    else:
+        url1 = temp_url[0]
+        url1 = url1.split('?')[0]
+        if url1[-1] != '/':  # 如果末尾没斜杠会导致获取不到最高画质
+            url1 += '/'
+    print(url1)
+
+    # header1 = {'user-agent': user_agent, "cookie": cookies}
+    # recv = requests.get(url1, headers=header1)
+
+    # html_text = recv.text
+    # recv.close()
+    # re_script = re.compile(r'<script>window.__playinfo__=(.*?)</script>', re.S)  # 包含各种清晰度下载地址的scrip
+    # script = re_script.findall(html_text)[0]
+    # json_script = json.loads(script)
+    # temp = json_script["data"]["dash"]["video"][0]["height"]
+    # audio_url = json_script['data']['dash']['audio'][0]['baseUrl']  # 0是最高清晰度
+    # audio_url2 = json_script['data']['dash']['audio'][2]['baseUrl']  # 0是最高清晰度
+    # video_url = json_script['data']['dash']['video'][0]['baseUrl']  # 0是最高清晰度
     # print(json_script['data']['dash']['audio'])
     # print(json_script['data']['dash']['video'])
-    wget().download(audio_url, '123.mp3', header2)
+    # wget().download(audio_url, '123.mp3', header2)

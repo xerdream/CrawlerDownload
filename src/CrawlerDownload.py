@@ -149,12 +149,13 @@ class CD_GUI:
         self.place_frame_area_rely = (
             self.place_lable_rely + self.place_lable_relheight
         )  # 子窗口位置，根据其描述位置与高度计算得出
-        # 按钮列表
+        # 按钮列表，可在此直接增加
         self.button_select_config = [
             {"text": "bilibili", "command": self.show_bilibili},
             {"text": "m3u8", "command": self.show_m3u8},
             {"text": "youtube", "command": self.show_youtube},
             {"text": "twitch", "command": self.show_twitch},
+            {"text": "setting", "command": self.show_setting},
         ]
         # 实例字典
         self.button_select: Dict[str, ttk.Button] = {}  # 按钮
@@ -228,11 +229,17 @@ class CD_GUI:
         ui_class = m3u8_GUI
         self.show_frame_area(name, ui_class)
 
+    def show_setting(self):
+        """显示设置子窗口"""
+        name = "setting"
+        ui_class = setting_GUI
+        self.show_frame_area(name, ui_class)
+
     def show_frame_area(self, name: str, ui_class: common_GUI):
         if name not in self.ui:
             self.ui[name] = ui_class(self.frame_area[name], self.config)
 
-        self.lable_area.config(text=f"{name}视频下载")
+        self.lable_area.config(text=name)
 
         if self.current_show is not None:
             self.frame_area[self.current_show].place_forget()
@@ -251,6 +258,54 @@ class CD_GUI:
             self.config.save_config()
         finally:
             self.init_window.destroy()
+
+
+class setting_GUI(common_GUI):
+    def __init__(self, init_window, config: DownloadConfig):
+        super().__init__()
+        self.config = config
+        self.lable_text: List[str] = ["保存路径:", "代理(socks):"]  # 输入框描述
+        # self.checkbutton_text: List[str] = ["保存音频", "保存视频", "保存无声视频"]
+        # 设置输入框与描述
+        self._build_lable_text(init_window)
+        self._rely_next(self.size_space * 3)
+        # 设置勾选框
+        # self._build_checkbutton_text(init_window)
+        # self.var_save[0].set(True)
+        self._rely_next(self.size_heigh + self.size_space * 15)
+
+        # 开始按钮
+        self.button_conversion = ttk.Button(
+            init_window, text="打开文件夹", command=self.opendir
+        )
+        self.button_conversion.place(
+            relheight=self.size_heigh, relwidth=0.15, relx=0.85, rely=self.rely_area
+        )
+
+        self.button_start = ttk.Button(init_window, text="保存", command=self.save)
+        self.button_start.place(
+            relheight=self.size_heigh, relwidth=0.2, relx=0.4, rely=self.rely_area
+        )
+        # 日志输出 text_log
+        self._rely_next(self.size_heigh + self.size_space * 2)
+        self._build_text_log(init_window)
+
+        # 载入配置信息
+        self.entry_[0].insert(0, self.config.save_path)
+        self.entry_[1].insert(0, self.config.proxy)
+
+    def save(self):
+        """保存配置"""
+        self.config.save_path = self.entry_[0].get()
+        self.config.proxy = self.entry_[1].get()
+        self.config.save_config()
+        self.print_log("保存成功")
+
+    def opendir(self):
+        open_path = os.getcwd() + '\\' + self.config.save_path
+        if not os.path.exists(open_path):
+            os.mkdir(open_path)
+        os.startfile(open_path)
 
 
 class bilibili_GUI(common_GUI):
@@ -328,13 +383,7 @@ class youtube_GUI(common_GUI):
         self.var_save[0].set(True)
         self.var_save[3].set(True)
         self._rely_next(self.size_heigh + self.size_space * 2)
-        # 开始按钮
-        self.button_conversion = ttk.Button(
-            init_window, text="打开文件夹", command=self.opendir
-        )
-        self.button_conversion.place(
-            relheight=self.size_heigh, relwidth=0.15, relx=0.85, rely=self.rely_area
-        )
+        
         self.button_start = ttk.Button(init_window, text="开始下载", command=self.start)
         self.button_start.place(
             relheight=self.size_heigh, relwidth=0.2, relx=0.4, rely=self.rely_area
@@ -375,8 +424,6 @@ class youtube_GUI(common_GUI):
         )
         self.button_start["state"] = tkinter.NORMAL
 
-    def opendir(self):
-        os.startfile(os.getcwd() + "/" + self.entry_[2].get())
 
 
 class m3u8_GUI(common_GUI):

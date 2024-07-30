@@ -6,7 +6,7 @@ authors = ["FGx <140056503+xerdream@users.noreply.github.com>"]
 readme = "README.md"
 
 [tool.poetry.dependencies]
-python = "^3.11"
+python = ">=3.11.0,<3.13.0"
 aiofiles = "^24.1.0"
 aiohttp = "^3.9.5"
 pillow = "^10.4.0"
@@ -16,6 +16,7 @@ requests = "^2.32.3"
 yt-dlp = "^2024.7.25"
 pyzbar = "^0.1.9"
 pycryptodome = "^3.20.0"
+pyinstaller = "^6.9.0"
 
 
 [[tool.poetry.source]]

@@ -4,6 +4,7 @@ import asyncio
 from yt_dlp import YoutubeDL
 from threading import Thread
 from download.down_m3u8 import M3u8Download, ProcessVideo
+from config.download import DownloadConfig
 
 total = 0
 headers = {'user-agent': "Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/86.0.4240.198 Safari/537.36"}
@@ -12,6 +13,7 @@ path_m3u8 = 'download/m3u8'
 name = 'default'
 url_ = ""
 url = ""
+proxy = DownloadConfig().proxy
 downloading = False
 
 progressbar = None
@@ -61,7 +63,7 @@ def main2(save_audio: bool, save_mp4: bool, save_ts: bool):
     print_log("*" * 50)
     # 获取信息
     ydl_opts = {
-        'proxy': 'socks5://127.0.0.1:11451',
+        'proxy': proxy,
         # 'progress_hooks': [my_hook],
         'logger': MyLogger(),
         'noprogress': True,
@@ -113,7 +115,7 @@ def main2(save_audio: bool, save_mp4: bool, save_ts: bool):
 def main():
     blocksize = 1024 * 1024 * 2
     ydl_opts = {
-        'proxy': 'socks5://127.0.0.1:11451',
+        'proxy': proxy,
         # 'progress_hooks': [my_hook],
         'logger': MyLogger(),
         'noprogress': True,

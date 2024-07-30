@@ -38,7 +38,7 @@ class wget:
 
     def __init__(self, config={}, progressbar=cmdProgressBar(), print_log=print):
         self.config = {
-            'block': int(config['block'] if 'block' in config else 1024 * 512)
+            'block': int(config['block'] if 'block' in config else 1024 * 1024)
         }
         self.total = 0
         self.size = 0

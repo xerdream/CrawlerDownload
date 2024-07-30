@@ -3,7 +3,8 @@ import json
 
 DEFAULT_CONFIG = {
     "save_path": "download/",
-    "bilibili_cookies": ""
+    "bilibili_cookies": "",
+    "proxy": "",
 }
 
 
@@ -16,15 +17,23 @@ class DownloadConfig():
 
     @property
     def save_path(self):
-        return self.config["save_path"]
+        return self.config["save_path"] if "save_path" in self.config else ""
 
     @save_path.setter
     def save_path(self, save_path):
         self.config["save_path"] = save_path
 
     @property
+    def proxy(self):
+        return self.config["proxy"] if "proxy" in self.config else ""
+
+    @proxy.setter
+    def proxy(self, proxy):
+        self.config["proxy"] = proxy
+
+    @property
     def bilibili_cookies(self):
-        return self.config["bilibili_cookies"]
+        return self.config["bilibili_cookies"] if "bilibili_cookies" in self.config else ""
 
     @bilibili_cookies.setter
     def bilibili_cookies(self, bilibili_cookies):
