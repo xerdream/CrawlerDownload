@@ -5,8 +5,8 @@ import re
 from pathlib import Path
 import sys
 sys.path.append("D:\\test\\CrawlerDownload\\src")
-from Util import wget
-from Util import UrlCodeError, URLError
+from .Util import wget
+from .Util import UrlCodeError, URLError
 
 # 初始化网页请求头文件
 path = ""

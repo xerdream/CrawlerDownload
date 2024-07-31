@@ -4,7 +4,6 @@ from threading import Thread
 from pathlib import Path
 from pytube import YouTube, StreamQuery
 import yt_dlp
-from config.download import DownloadConfig
 # import ffmpeg
 
 # 初始化网页请求头文件
@@ -14,6 +13,7 @@ cookies = ""
 name = None
 progressbar = None
 text_log = None
+proxy = ""
 proxies = {"http": "127.0.0.1:11452", "https": "127.0.0.1:11452"}
 downloading = False
 
@@ -170,7 +170,7 @@ def main2(save_audio: bool, save_mp4: bool, save_video: bool):
     """yt_dlp下载"""
     blocksize = 1024 * 1024 * 2
     ydl_opts = {
-        "proxy": DownloadConfig().proxy,
+        "proxy": proxy,
         "progress_hooks": [progress_hook],
         "logger": MyLogger(),
         "noprogress": True,

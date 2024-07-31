@@ -18,8 +18,8 @@ from threading import Thread
 
 from aiohttp.client_reqrep import ClientResponse
 
-from Util import UrlCodeError, URLError
-from Util import DecryptM3u8Url
+from .Util import UrlCodeError, URLError
+from .Util import DecryptM3u8Url
 
 # os.environ["http_proxy"] = "http://127.0.0.1:11451"
 # os.environ["https_proxy"] = "http://127.0.0.1:11451"
@@ -151,10 +151,11 @@ class M3u8Download():
         self.filem3u8 = f'{self.path_m3u8}/{name}.m3u8'
         self.filem3u8_main = f'{self.path_m3u8}/main/{name}.m3u8'
         self.creat_dir(self.path_m3u8)
-
+        self.creat_dir(f'{self.path_m3u8}/main')
         self.total = 0
 
-    def total_ts(self):  # 查看一共有几个ts
+    def total_ts(self):
+        """查看一共有几个ts"""
         if self.total != 0:  # 防止重复计算
             return self.total
         sum = 0
@@ -169,54 +170,41 @@ class M3u8Download():
         return sum
 
     def get_m3u8(self, url: str):
-        """下载m3u8文件"""
-        if Path(self.filem3u8).is_file():
-            self.print_log(f"m3u8已存在:{self.filem3u8}")
-            return
-
-        print_log('get m3u8')
+        """下载m3u8文件,返回最后一个m3u8文件url"""
         recv = requests.get(url=url, headers=self.headers)
 
         self.check_urlcode(recv, "m3u8")
 
-        with open(self.filem3u8, 'wb') as f:
-            f.write(recv.content)
+        m3u8 = recv.text
         recv.close()
-        self.print_log(f'保存位置：{self.filem3u8}')
 
-    def get_main_m3u8(self, url):
-        """获取主m3u8"""
-        if os.path.exists(self.filem3u8_main):
-            return self.get_url_in_mainm3u8()  # 返回url
-        # 保存文件
-        self.print_log('get main_m3u8')
-        creat_dir(f'{self.path_m3u8}/main/')
-        recv = requests.get(url)
-        self.check_urlcode(recv, "m3u8")
+        if re.search(r"#EXT-X-STREAM-INF", m3u8) is None:
+            print_log('get m3u8')
+            with open(self.filem3u8, 'w', encoding='utf-8') as f:
+                f.write(m3u8)
+            self.print_log(f'保存位置：{self.filem3u8}')
+        else:  # 否则说明还有二层m3u8
+            with open(self.filem3u8_main, 'w', encoding='utf-8') as f:
+                f.write(m3u8)
+            print_log('get main_m3u8')
 
-        with open(self.filem3u8_main, 'wb') as f:
-            text = recv.text
-            f.write(recv.content)
-        recv.close()
-        # 返回url
-        for line in text.split('\n'):
+            url = self.get_second_m3u8_url(m3u8)
+            self.print_log(f'保存位置：{self.filem3u8_main}')
+            end_url = self.get_m3u8(url)
+            # 返回最后一级的url
+            return end_url if end_url is not None else url
+
+    def get_second_m3u8_url(self, m3u8: str):
+        """获取第一条m3u8网址"""
+        for line in m3u8.splitlines():
             line = line.strip()  # 去掉空格
             if line.startswith('http'):
                 return line
 
-    def get_url_in_mainm3u8(self):
-        """获取第一条m3u8网址"""
-        with open(self.filem3u8_main, 'r') as f:
-            for line in f:
-                line = line.strip()  # 去掉空格
-                if line.startswith('http'):
-                    return line
-
     def get_m3u8_twitch(self, url):
-        """获取主次m3u8"""
-        url_m3u8 = self.get_main_m3u8(url)
-        self.url_ = url_m3u8.rsplit("/", 1)[0] + '/'
-        self.get_m3u8(url_m3u8)
+        """twitch格式m3u8特殊处理"""
+        url = self.get_m3u8(url)
+        self.url_ = url.rsplit("/", 1)[0]
 
     async def async_download_ts(self, url: str, i, session):  # 根据url下载ts文件
         filename = f'{self.path_ts}/{i}.ts'
@@ -232,6 +220,8 @@ class M3u8Download():
             self.progressbar.update(1)
         except UrlCodeError as e:
             self.print_log(e)
+        except Exception:
+            self.print_log(f"下载{i}失败。")
 
     async def async_download(self):  # 根据m3u8文件安排下载
         i = 1
@@ -583,5 +573,6 @@ def qrcode_invoked_by_ui():
 
 
 if __name__ == "__main__":
-    url = "https://c.pc.qq.com/middlect.html?iscontinue=1&pfurl=http://iftuhqxlgg4131667030-1317169165.cos-website.ap-nanjing.myqcloud.com/?key=b41e9e0db765dcf12ae42a2b131fec66f6882413e5c02efe8a9338fe94c4c307f386ed1d4ea86a1d097f25b5338b5f2c8280005f8eb0253661f1a0f3531b2521971ddca30c82cbb5270a2e8afbf6aaf72630faa148fe3b43f385f40f7ac6a61f8017ffacfe9c83147e51bc0f0dcd7e8146ede75896021abd57fff844ea9ace2d2ca23ff9976a5e6fff5399915f688963e7d836041ce9617dcf7aec6969abe3054998e9fef6b64a8f57fce036169e46b66169beaba5045e81b4412a080b9505bffc8cb7bb87caed08a4a854bab4120406&9g20231106"
-    print()
+    url = "https://usher.ttvnw.net/vod/2210314109.m3u8?acmb=e30%3D&allow_source=true&browser_family=microsoft%20edge&browser_version=127.0&cdm=wv&os_name=Windows&os_version=NT%2010.0&p=7050009&platform=web&play_session_id=042e2ae62b1555296fd7e0270d3d16cd&player_backend=mediaplayer&player_version=1.31.0-sr.3&playlist_include_framerate=true&reassignments_supported=true&sig=fe5d75746d9c9905f0eb15932c355bb9d2af5a61&supported_codecs=av1,h265,h264&token=%7B%22authorization%22%3A%7B%22forbidden%22%3Afalse%2C%22reason%22%3A%22%22%7D%2C%22chansub%22%3A%7B%22restricted_bitrates%22%3A%5B%5D%7D%2C%22device_id%22%3A%223EX6QfnGQt4TVAB2R4iK7cSuJ0m8JU5d%22%2C%22expires%22%3A1722464593%2C%22https_required%22%3Atrue%2C%22privileged%22%3Afalse%2C%22user_id%22%3A891620891%2C%22version%22%3A2%2C%22vod_id%22%3A2210314109%7D&transcode_mode=cbr_v1"
+    dl = M3u8Download("D:\\FGX\\Downloads\\新建文件夹", "test")
+    dl.get_m3u8(url)

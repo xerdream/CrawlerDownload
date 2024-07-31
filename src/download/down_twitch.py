@@ -3,8 +3,7 @@ import os
 import asyncio
 from yt_dlp import YoutubeDL
 from threading import Thread
-from download.down_m3u8 import M3u8Download, ProcessVideo
-from config.download import DownloadConfig
+from .down_m3u8 import M3u8Download, ProcessVideo
 
 total = 0
 headers = {'user-agent': "Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/86.0.4240.198 Safari/537.36"}
@@ -13,7 +12,7 @@ path_m3u8 = 'download/m3u8'
 name = 'default'
 url_ = ""
 url = ""
-proxy = DownloadConfig().proxy
+proxy = ""
 downloading = False
 
 progressbar = None
@@ -83,9 +82,10 @@ def main2(save_audio: bool, save_mp4: bool, save_ts: bool):
         if __name__ != "__main__":
             loop1 = asyncio.new_event_loop()
             asyncio.set_event_loop(loop1)
-        download = M3u8Download(path, path_m3u8, name, headers=headers, progressbar=progressbar, print_log=print_log)
+        download = M3u8Download(path=path, name=name, headers=headers, progressbar=progressbar, print_log=print_log)
         # download = M3u8Download(path, path_m3u8, name, headers=headers)
-        processvideo = ProcessVideo(path, path_m3u8, name, progressbar=progressbar, print_log=print_log)
+        processvideo = ProcessVideo(path=path, name=name, progressbar=progressbar, print_log=print_log)
+        # download.get_m3u8_twitch(url_m3u8)
         download.get_m3u8_twitch(url_m3u8)
         download.download_ts()
         download.solve_lost()

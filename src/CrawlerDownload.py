@@ -1,5 +1,6 @@
 import re
 import os
+import sys
 import tkinter
 import tkinter.ttk as ttk
 
@@ -11,7 +12,7 @@ from download import (
     down_twitch as tt,
 )
 
-from config.download import DownloadConfig
+from config.download_config import DownloadConfig
 
 
 class ProgressBar:
@@ -258,13 +259,14 @@ class CD_GUI:
             self.config.save_config()
         finally:
             self.init_window.destroy()
+            sys.exit()
 
 
 class setting_GUI(common_GUI):
     def __init__(self, init_window, config: DownloadConfig):
         super().__init__()
         self.config = config
-        self.lable_text: List[str] = ["保存路径:", "代理(socks):"]  # 输入框描述
+        self.lable_text: List[str] = ["保存路径:", "代理(socks5://):"]  # 输入框描述
         # self.checkbutton_text: List[str] = ["保存音频", "保存视频", "保存无声视频"]
         # 设置输入框与描述
         self._build_lable_text(init_window)
@@ -399,6 +401,7 @@ class youtube_GUI(common_GUI):
     def __init_yt(self):
         yt.progressbar = ProgressBar(self.progressbar)
         yt.text_log = self.print_log
+        yt.proxy = self.config.proxy
 
         self.entry_[2].insert(0, self.config.save_path)
 
@@ -423,7 +426,6 @@ class youtube_GUI(common_GUI):
             self.var_save[3].get(),
         )
         self.button_start["state"] = tkinter.NORMAL
-
 
 
 class m3u8_GUI(common_GUI):
@@ -558,7 +560,8 @@ class twitch_GUI(common_GUI):
         self.entry_[2].insert(0, self.config.save_path)
 
         tt.progressbar = ProgressBar(self.progressbar)
-        tt.text_log = self.print_log
+        tt.proxy = self.config.proxy
+        tt.print_log = self.print_log
 
     def start(self):
         """开始"""
@@ -583,8 +586,8 @@ class twitch_GUI(common_GUI):
 
 def isURL(string: str):
     """判断是否是网址"""
-    temp = re.match(
-        r"^(?:http(s)?:\/\/)[\w.-]+(?:\.[\w\.-]+)+[\w\-\._~:/?#[\]@!\$&'\*\+,;=.]+$",
+    temp = re.search(
+        r"(https|http|ftp)://([\w-]+\.)+[\w-]+(/[./?%&=\w-]*)(:[0-9]{1,5})?(/[S]*)?",
         string,
     )
     return temp is not None
