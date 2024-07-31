@@ -87,6 +87,7 @@ def main2(save_audio: bool, save_mp4: bool, save_ts: bool):
         processvideo = ProcessVideo(path=path, name=name, progressbar=progressbar, print_log=print_log)
         # download.get_m3u8_twitch(url_m3u8)
         download.get_m3u8_twitch(url_m3u8)
+        print_log("开始下载...")
         download.download_ts()
         download.solve_lost()
         processvideo.merge_paln_a()
@@ -101,7 +102,7 @@ def main2(save_audio: bool, save_mp4: bool, save_ts: bool):
             if os.path.exists(download.path_ts):
                 processvideo.remove_ts(download.path_ts)
 
-            if os.path.exists(f'{path}/{name}.ts').is_file():
+            if os.path.exists(f'{path}/{name}.ts'):
                 os.remove(f'{path}/{name}.ts')
             print_log("delete ts")
     # except Exception as e:

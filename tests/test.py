@@ -1,6 +1,5 @@
 import yt_dlp
 import requests
-from Util.mException import URLError
 
 def main():
     # url = "https://www.twitch.tv/videos/1887203872"
@@ -38,5 +37,6 @@ def main():
 
 
 if __name__ == "__main__":
-    strss = 'https://cn.bing.com/search?q=%E8%82%AE%E8%84%8F%E7%94%B5%E5%BD%B1&form=ANSPH1&refig=e885a4d377ca405eb91b6294ab5a74d0&pc=CNNDDB'
-    print(strss.split('/')[2])
+    for i in range(1, 5):
+        print("a ")
+    print(i)

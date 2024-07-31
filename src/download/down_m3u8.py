@@ -24,7 +24,6 @@ from .Util import DecryptM3u8Url
 # os.environ["http_proxy"] = "http://127.0.0.1:11451"
 # os.environ["https_proxy"] = "http://127.0.0.1:11451"
 headers = {'user-agent': "Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/86.0.4240.198 Safari/537.36"}
-total = 0
 path = 'download'
 name = 'default'
 url_m3u8 = ""
@@ -99,8 +98,7 @@ def main(save_audio, save_mp4, save_ts):
 
     download.get_m3u8(url_m3u8)
     # 获取ts文件数量
-    global total
-    total = download.total_ts()
+    # download.total_ts()
     download.download_ts()
     # 校验ts是否完整 + 补充下载
     download.solve_lost()
@@ -179,14 +177,14 @@ class M3u8Download():
         recv.close()
 
         if re.search(r"#EXT-X-STREAM-INF", m3u8) is None:
-            print_log('get m3u8')
+            self.print_log('get m3u8')
             with open(self.filem3u8, 'w', encoding='utf-8') as f:
                 f.write(m3u8)
             self.print_log(f'保存位置：{self.filem3u8}')
         else:  # 否则说明还有二层m3u8
             with open(self.filem3u8_main, 'w', encoding='utf-8') as f:
                 f.write(m3u8)
-            print_log('get main_m3u8')
+            self.print_log('get main_m3u8')
 
             url = self.get_second_m3u8_url(m3u8)
             self.print_log(f'保存位置：{self.filem3u8_main}')
@@ -260,14 +258,14 @@ class M3u8Download():
             if self.solve_count > 3:
                 self.print_log('部分文件无法下载')
                 return
-            for i in range(1, total + 1):
+            for i in range(1, self.total + 1):
                 if not Path(f'{self.path}/{self.name}/{i}.ts').is_file():
                     self.print_log('no ' + str(i))
                     f = True
                     break
                 else:
                     f = False
-            if (i != total):
+            if (i != self.total):  # 不适合放在for循环中，因为每次下载完后，需要重头开始检查
                 self.download_ts()
         self.print_log('文件数量正确')
 
@@ -468,7 +466,7 @@ class Decrypt():
         for ts in all_ts:
             task = asyncio.create_task(self.dec_ts(ts))
             tasks.append(task)
-        progressbar.set(total, 0)
+        progressbar.set(len(all_ts), 0)
         await asyncio.wait(tasks)  # 等待任务结束
         print_log("解密完成")
 
@@ -573,6 +571,9 @@ def qrcode_invoked_by_ui():
 
 
 if __name__ == "__main__":
-    url = "https://usher.ttvnw.net/vod/2210314109.m3u8?acmb=e30%3D&allow_source=true&browser_family=microsoft%20edge&browser_version=127.0&cdm=wv&os_name=Windows&os_version=NT%2010.0&p=7050009&platform=web&play_session_id=042e2ae62b1555296fd7e0270d3d16cd&player_backend=mediaplayer&player_version=1.31.0-sr.3&playlist_include_framerate=true&reassignments_supported=true&sig=fe5d75746d9c9905f0eb15932c355bb9d2af5a61&supported_codecs=av1,h265,h264&token=%7B%22authorization%22%3A%7B%22forbidden%22%3Afalse%2C%22reason%22%3A%22%22%7D%2C%22chansub%22%3A%7B%22restricted_bitrates%22%3A%5B%5D%7D%2C%22device_id%22%3A%223EX6QfnGQt4TVAB2R4iK7cSuJ0m8JU5d%22%2C%22expires%22%3A1722464593%2C%22https_required%22%3Atrue%2C%22privileged%22%3Afalse%2C%22user_id%22%3A891620891%2C%22version%22%3A2%2C%22vod_id%22%3A2210314109%7D&transcode_mode=cbr_v1"
-    dl = M3u8Download("D:\\FGX\\Downloads\\新建文件夹", "test")
-    dl.get_m3u8(url)
+    # url = "https://usher.ttvnw.net/vod/2210314109.m3u8?acmb=e30%3D&allow_source=true&browser_family=microsoft%20edge&browser_version=127.0&cdm=wv&os_name=Windows&os_version=NT%2010.0&p=7050009&platform=web&play_session_id=042e2ae62b1555296fd7e0270d3d16cd&player_backend=mediaplayer&player_version=1.31.0-sr.3&playlist_include_framerate=true&reassignments_supported=true&sig=fe5d75746d9c9905f0eb15932c355bb9d2af5a61&supported_codecs=av1,h265,h264&token=%7B%22authorization%22%3A%7B%22forbidden%22%3Afalse%2C%22reason%22%3A%22%22%7D%2C%22chansub%22%3A%7B%22restricted_bitrates%22%3A%5B%5D%7D%2C%22device_id%22%3A%223EX6QfnGQt4TVAB2R4iK7cSuJ0m8JU5d%22%2C%22expires%22%3A1722464593%2C%22https_required%22%3Atrue%2C%22privileged%22%3Afalse%2C%22user_id%22%3A891620891%2C%22version%22%3A2%2C%22vod_id%22%3A2210314109%7D&transcode_mode=cbr_v1"
+    # dl = M3u8Download("D:\\FGX\\Downloads\\新建文件夹", "test")
+    # dl.get_m3u8(url)
+    for i in range(1, 5):
+        print("a ")
+    print(i)
