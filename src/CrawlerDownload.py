@@ -435,7 +435,6 @@ class m3u8_GUI(common_GUI):
         self.lable_text: list[str] = [
             "视频名称:",
             "m3u8地址:",
-            "m3u8下载前缀:",
             "保存路径",
         ]
         self.checkbutton_text: list[str] = ["保存音频", "保存视频", "保存ts视频"]
@@ -471,7 +470,7 @@ class m3u8_GUI(common_GUI):
         self.__init_mm()
 
     def __init_mm(self):
-        self.entry_[3].insert(0, self.config.save_path)
+        self.entry_[2].insert(0, self.config.save_path)
 
         mm.progressbar = ProgressBar(self.progressbar)
         mm.print_log = self.print_log
@@ -480,8 +479,7 @@ class m3u8_GUI(common_GUI):
         """开始"""
         mm.name = self.entry_[0].get()
         mm.url_m3u8 = self.entry_[1].get()
-        mm.url_ = self.entry_[2].get()
-        mm.path = self.entry_[3].get()
+        mm.path = self.entry_[2].get()
         mm.path_m3u8 = mm.path + "m3u8"
         # 简单的合法性判断
         if mm.name == "":

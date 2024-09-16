@@ -1,6 +1,7 @@
 import yt_dlp
 import requests
 
+
 def main():
     # url = "https://www.twitch.tv/videos/1887203872"
     # blocksize = 1024 * 1024 * 2
@@ -23,20 +24,32 @@ def main():
     response = requests.get(url)
     text = response.text
     response.close()
-    for line in text.split('\n'):
+    for line in text.split("\n"):
         line = line.strip()  # 去掉空格
-        if line.startswith('http'):
+        if line.startswith("http"):
             print(line)
             url_m3u8 = line
             break
-    url_ = url_m3u8.rsplit("/", 1)[0] + '/'
-    response = requests.get(url_ + '1.ts')
+    url_ = url_m3u8.rsplit("/", 1)[0] + "/"
+    response = requests.get(url_ + "1.ts")
     # print(response.text)
     response.close()
     print(url_)
 
 
+def merge_url(targetURL: str, baseURL: str):
+    """合成URL"""
+    if targetURL.startswith("http") or targetURL.startswith("https"):
+        return targetURL
+    elif targetURL.startswith("/"):
+        domain = baseURL.split("/")
+        return f"{domain[0]}//{domain[2]}{targetURL}"
+    else:
+        return f"{baseURL.rsplit('/',1)[0]}/{targetURL}"
+
+
 if __name__ == "__main__":
-    for i in range(1, 5):
-        print("a ")
-    print(i)
+    # for i in range(1, 5):
+    #     print("a ")
+    # print(i)
+    print(merge_url("aaa", "https://cf2prra.contactflirt.one/wuyg33w/xd?m=1&t=Valentina_Petrovna"))
