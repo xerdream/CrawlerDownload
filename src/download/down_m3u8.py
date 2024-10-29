@@ -246,6 +246,7 @@ class M3u8Download:
                     if line.startswith("#") or line == "":
                         continue
                     url = f"{self.url_}{line}"  # 获取m3u8时已经设置过url_
+                    print(url)
                     task = asyncio.create_task(self.async_download_ts(url, i, session))
                     tasks.append(task)
                     i += 1

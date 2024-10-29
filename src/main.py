@@ -3,7 +3,7 @@ import tkinter
 from CrawlerDownload import CD_GUI
 
 
-def window_center(tk, width: int, heigh: int):
+def window_center(tk: tkinter.Tk, width: int, heigh: int):
     """窗口居中"""
     screenwidth = tk.winfo_screenwidth()
     screenheight = tk.winfo_screenheight()

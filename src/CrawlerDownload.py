@@ -138,120 +138,30 @@ class CD_GUI:
         self.init_window.protocol("WM_DELETE_WINDOW", self.before_exit)
 
         init_window.title("视频下载工具V1.0")
-        # 位置设置
-        self.place_frame_x = {"relx": 0.1, "relwidth": 0.8}  # 子窗口横向范围
-        self.place_button_select_y = {"rely": 0.1, "relheight": 0.8}  # 按钮相对高度
-        self.place_frame_button_rely = 0.02  # 按钮窗口相对位置y
-        self.place_frame_button_relheight = 0.07  # 按钮窗口相对高度
-        self.place_lable_rely = (
-            self.place_frame_button_rely + self.place_frame_button_relheight
-        )  # 子窗口描述y轴位置，根据按钮位置与高度计算得出
-        self.place_lable_relheight = 0.1  # 子窗口描述高度
-        self.place_frame_area_rely = (
-            self.place_lable_rely + self.place_lable_relheight
-        )  # 子窗口位置，根据其描述位置与高度计算得出
-        # 按钮列表，可在此直接增加
-        self.button_select_config = [
-            {"text": "bilibili", "command": self.show_bilibili},
-            {"text": "m3u8", "command": self.show_m3u8},
-            {"text": "youtube", "command": self.show_youtube},
-            {"text": "twitch", "command": self.show_twitch},
-            {"text": "setting", "command": self.show_setting},
-        ]
-        # 实例字典
-        self.button_select: Dict[str, ttk.Button] = {}  # 按钮
-        self.ui = {}
-        self.frame_area: Dict[str, ttk.Frame] = {}  # 子窗口
-
-        # 风格
-        # self.framestyle = ttk.Style()
-        # self.framestyle.configure("1.TFrame", background='red')
-        # 按钮frame
-        self.frame_button_select = ttk.Frame(init_window)
-        self.frame_button_select.place(
-            self.place_frame_x,
-            rely=self.place_frame_button_rely,
-            relheight=self.place_frame_button_relheight,
-        )
-        # 当前显示的子窗口
-        self.current_show: str = None
-        # 设置当前子页面标题
-        self.lable_area = ttk.Label(init_window, anchor="center")
-        self.lable_area.place(
-            self.place_frame_x,
-            rely=self.place_lable_rely,
-            relheight=self.place_lable_relheight,
-        )
-        # 设置切换按钮
-        temp_numb = len(self.button_select_config)  # 按钮个数
-        temp_relx = 0
-        temp_relwidth = 0.8 / temp_numb  # 所有按钮宽度占比0.8
-        temp_blank = 0.2 / (temp_numb - 1)  # 所有按钮间距占比0.2
-
-        # 遍历按钮列表，设置按钮与frame
-        for i in range(temp_numb):
-            # 设置按钮布局
-            item = self.button_select_config[i]
-            self.button_select[item["text"]] = ttk.Button(
-                self.frame_button_select, text=item["text"], command=item["command"]
-            )
-            self.button_select[item["text"]].place(
-                self.place_button_select_y, relx=temp_relx, relwidth=temp_relwidth
-            )
-            temp_relx += temp_blank + temp_relwidth
-            # 初始化frame
-            self.frame_area[item["text"]] = ttk.Frame(init_window)
-
-        # 加载配置，默认显示
+        self.style = ttk.Style()
+        self.style.configure('Custom.TNotebook.Tab', padding=[30, 4])
+        self.notebook = ttk.Notebook(init_window, style="Custom.TNotebook")
         self.config = DownloadConfig()
-        self.show_youtube()
+        self.notebook.place(relheight=1, relwidth=1)
+        self.place_frame_x = {
+            "relx": 0.1,
+            "relwidth": 0.8,
+            "rely": 0.05,
+            "relheight": 0.95,
+        }  # 子窗口范围
 
-    def show_bilibili(self):
-        """显示bilibili子窗口"""
-        name = "bilibili"
-        ui_class = bilibili_GUI
-        self.show_frame_area(name, ui_class)
+        self.add_frame_to_notebook(youtube_GUI, "yuotube")
+        self.add_frame_to_notebook(bilibili_GUI, "bilibili")
+        self.add_frame_to_notebook(m3u8_GUI, "m3u8")
+        self.add_frame_to_notebook(twitch_GUI, "twitch")
+        self.add_frame_to_notebook(setting_GUI, "setting")
 
-    def show_youtube(self):
-        """显示youtube子窗口"""
-        name = "youtube"
-        ui_class = youtube_GUI
-        self.show_frame_area(name, ui_class)
-
-    def show_twitch(self):
-        """显示twitch子窗口"""
-        name = "twitch"
-        ui_class = twitch_GUI
-        self.show_frame_area(name, ui_class)
-
-    def show_m3u8(self):
-        """显示m3u8子窗口"""
-        name = "m3u8"
-        ui_class = m3u8_GUI
-        self.show_frame_area(name, ui_class)
-
-    def show_setting(self):
-        """显示设置子窗口"""
-        name = "setting"
-        ui_class = setting_GUI
-        self.show_frame_area(name, ui_class)
-
-    def show_frame_area(self, name: str, ui_class: common_GUI):
-        if name not in self.ui:
-            self.ui[name] = ui_class(self.frame_area[name], self.config)
-
-        self.lable_area.config(text=name)
-
-        if self.current_show is not None:
-            self.frame_area[self.current_show].place_forget()
-            self.button_select[self.current_show]["state"] = tkinter.NORMAL
-        self.current_show = name
-        self.frame_area[self.current_show].place(
-            self.place_frame_x,
-            rely=self.place_frame_area_rely,
-            relheight=0.99 - self.place_frame_area_rely,
-        )  # 0.99防止进度条贴地
-        self.button_select[self.current_show]["state"] = tkinter.DISABLED
+    def add_frame_to_notebook(self, gui, name):
+        frame = ttk.Frame(self.notebook)
+        frame2 = ttk.Frame(frame)
+        frame2.place(self.place_frame_x)
+        self.notebook.add(frame, text=name)
+        gui(frame2, self.config)
 
     def before_exit(self):
         # 销毁窗口前操作
@@ -304,7 +214,7 @@ class setting_GUI(common_GUI):
         self.print_log("保存成功")
 
     def opendir(self):
-        open_path = os.getcwd() + '\\' + self.config.save_path
+        open_path = os.getcwd() + "\\" + self.config.save_path
         if not os.path.exists(open_path):
             os.mkdir(open_path)
         os.startfile(open_path)
@@ -385,7 +295,7 @@ class youtube_GUI(common_GUI):
         self.var_save[0].set(True)
         self.var_save[3].set(True)
         self._rely_next(self.size_heigh + self.size_space * 2)
-        
+
         self.button_start = ttk.Button(init_window, text="开始下载", command=self.start)
         self.button_start.place(
             relheight=self.size_heigh, relwidth=0.2, relx=0.4, rely=self.rely_area
